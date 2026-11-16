@@ -57,7 +57,10 @@ class Produto(models.Model):
 
     def __str__(self):
         return f"{self.sku} - {self.nome}"
-
+        
+    @property
+    def estoque_baixo(self):
+        return self.quantidade_estoque <= self.estoque_minimo
 
 class MovimentacaoEstoque(models.Model):
 

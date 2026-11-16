@@ -36,6 +36,7 @@ class ProdutoAdmin(admin.ModelAdmin):
         "preco_venda",
         "quantidade_estoque",
         "estoque_minimo",
+        "estoque_baixo",
         "ativo",
     )
 
@@ -58,6 +59,13 @@ class ProdutoAdmin(admin.ModelAdmin):
     list_select_related = ("categoria",)
 
     ordering = ("nome",)
+
+    @admin.display(
+        boolean=True,
+        description="Estoque baixo"
+    )
+    def estoque_baixo(self, obj):
+        return obj.estoque_baixo
 
 @admin.register(MovimentacaoEstoque)
 class MovimentacaoEstoqueAdmin(admin.ModelAdmin):
