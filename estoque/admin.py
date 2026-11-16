@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import Categoria, Produto
+from .models import Categoria, Produto, MovimentacaoEstoque
 
 
 @admin.register(Categoria)
@@ -58,3 +58,42 @@ class ProdutoAdmin(admin.ModelAdmin):
     list_select_related = ("categoria",)
 
     ordering = ("nome",)
+
+@admin.register(MovimentacaoEstoque)
+class MovimentacaoEstoqueAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "produto",
+        "tipo",
+        "quantidade",
+        "motivo",
+        "criado_em",
+    )
+
+    search_fields = (
+        "produto__sku",
+        "produto__nome",
+        "motivo",
+    )
+
+    list_filter = (
+        "tipo",
+        "criado_em",
+    )
+
+    readonly_fields = ("criado_em",)
+
+    list_select_related = ("produto",)
+
+    list_display_links = None
+
+    ordering = ("-criado_em",)
+
+    def has_change_permission(self, request, obj=None):
+        if obj is not None:
+            return False
+
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
