@@ -1,7 +1,7 @@
 
 from django.contrib import admin
 from .models import Categoria, Produto, MovimentacaoEstoque
-
+from django.db.models import F
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
@@ -24,7 +24,30 @@ class CategoriaAdmin(admin.ModelAdmin):
 
     ordering = ("nome",)
 
+class EstoqueBaixoFilter(admin.SimpleListFilter):
 
+    title = "Situação do estoque"
+    parameter_name = "estoque"
+
+    def lookups(self, request, model_admin):
+        return [
+            ("baixo", "Estoque baixo"),
+            ("normal", "Estoque normal"),
+        ]
+
+    def queryset(self, request, queryset):
+
+        if self.value() == "baixo":
+            return queryset.filter(
+                quantidade_estoque__lte=F("estoque_minimo")
+            )
+
+        if self.value() == "normal":
+            return queryset.filter(
+                quantidade_estoque__gt=F("estoque_minimo")
+            )
+
+        return queryset
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
 
@@ -47,9 +70,10 @@ class ProdutoAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
-        "categoria",
-        "ativo",
-    )
+    "categoria",
+    "ativo",
+    EstoqueBaixoFilter,
+)
 
     readonly_fields = (
         "criado_em",
