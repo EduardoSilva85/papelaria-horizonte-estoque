@@ -1,10 +1,9 @@
-
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db.models.deletion import ProtectedError
+from django.db import IntegrityError, transaction
 
 from .models import Categoria, Produto, MovimentacaoEstoque
-
 
 class CategoriaTest(TestCase):
 
@@ -159,4 +158,29 @@ class MovimentacaoEstoqueTest(TestCase):
 
         self.assertEqual(
             MovimentacaoEstoque.objects.count(), 1
+        )
+
+    # TESTE 6: Restrição de quantidade diretamente no banco
+
+    def test_banco_rejeita_quantidade_zero(self):
+
+        movimentacao = MovimentacaoEstoque(
+            produto=self.produto,
+            tipo=MovimentacaoEstoque.Tipo.ENTRADA,
+            quantidade=0,
+            motivo="Teste de restrição do banco"
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                MovimentacaoEstoque.objects.bulk_create(
+                    [movimentacao]
+                )
+
+        self.produto.refresh_from_db()
+
+        self.assertEqual(self.produto.quantidade_estoque, 10)
+
+        self.assertEqual(
+            MovimentacaoEstoque.objects.count(), 0
         )

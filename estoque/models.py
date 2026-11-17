@@ -57,7 +57,7 @@ class Produto(models.Model):
 
     def __str__(self):
         return f"{self.sku} - {self.nome}"
-        
+
     @property
     def estoque_baixo(self):
         return self.quantidade_estoque <= self.estoque_minimo
@@ -91,6 +91,14 @@ class MovimentacaoEstoque(models.Model):
         verbose_name = "Movimentação de Estoque"
         verbose_name_plural = "Movimentações de Estoque"
         ordering = ["-criado_em"]
+
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantidade__gte=1),
+                name="movimentacao_quantidade_maior_que_zero",
+            )
+        ]
+
 
     def __str__(self):
         return (
